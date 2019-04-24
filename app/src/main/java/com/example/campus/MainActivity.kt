@@ -55,11 +55,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     var preferences: SharedPreferences? = null
     var overlay: BusesOverlay? = null
     var authorized = false
+
     override fun onLayersReordered() {}
 
-
     override fun onLayerDrawFinished(id: Int, percent: Float) {}
-
 
     override fun onSingleTapUp(event: MotionEvent?) {
         event?.let {
@@ -202,7 +201,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
         findViewById<FrameLayout>(R.id.map).addView(mapView)
         findViewById<FloatingActionButton>(R.id.location).setOnClickListener { locatePosition() }
-        findViewById<FloatingActionButton>(R.id.zoom_in).setOnClickListener { mapView!!.zoomIn() }
+        findViewById<FloatingActionButton>(R.id.zoomIn).setOnClickListener { mapView!!.zoomIn() }
+        findViewById<FloatingActionButton>(R.id.zoomOut).setOnClickListener { mapView!!.zoomOut() }
         findViewById<ImageButton>(R.id.close).setOnClickListener {
             findViewById<View>(R.id.info).visibility = View.GONE
             overlay?.defaultColor()

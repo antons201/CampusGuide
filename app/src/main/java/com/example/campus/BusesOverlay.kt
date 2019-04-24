@@ -15,8 +15,6 @@ class BusesOverlay(context: Context, map: MapViewOverlays) : Overlay(context, ma
     private var items: MutableList<OverlayItem> = arrayListOf()
     private val marker = BitmapFactory.decodeResource(mContext.resources, R.drawable.ic_bus_grey600_18dp)
 
-
-
     fun defaultColor() {
         for (item in items)
             item.marker = marker

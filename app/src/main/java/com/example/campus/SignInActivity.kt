@@ -54,7 +54,6 @@ class SignInActivity : AppCompatActivity() {
     }
 
 
-
     private fun requestPermission() {
         val permissions = arrayOf(Manifest.permission.GET_ACCOUNTS, Manifest.permission.WRITE_SYNC_SETTINGS)
         ActivityCompat.requestPermissions(this, permissions, PERMISSIONS_CODE)
