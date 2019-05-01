@@ -31,6 +31,7 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -62,14 +63,21 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
     override fun onSingleTapUp(event: MotionEvent?) {
         event?.let {
+            //Log.d("coords", "${event.x}:${event.y}")
+//            Log.d("center", "${mapView!!.mapCenter.x}, ${mapView!!.mapCenter.y}")
+//            Log.d("center", "${mapView!!.mapCenter.x}, ${mapView!!.mapCenter.y}")
+//            Log.d("all_X", "${mapView!!.x}, ${mapView!!.pivotX}, ${mapView!!.scaleX}, ${mapView!!.translationX}")
+//            Log.d("all_Y", "${mapView!!.y}, ${mapView!!.pivotY}, ${mapView!!.scaleY}, ${mapView!!.translationY}")
+            //mapView!!.setZoomAndCenter(1f, GeoPoint(mapView!!.mapCenter.x - 100000.0, mapView!!.mapCenter.y))
+
             val tolerance = resources.displayMetrics.density * ConstantsUI.TOLERANCE_DP.toDouble()
             val dMinX = event.x - tolerance
             val dMaxX = event.x + tolerance
             val dMinY = event.y - tolerance
             val dMaxY = event.y + tolerance
+            //Log.d("D", "$dMinX, $dMaxX, $dMinY, $dMinY")
             val envelope = GeoEnvelope(dMinX, dMaxX, dMinY, dMaxY)
             val mapEnv = mapView?.screenToMap(envelope) ?: return
-
 
             val types = GeoConstants.GTPointCheck
             mapView?.getVectorLayersByType(types)?.let { layers ->
@@ -147,11 +155,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                     return
                 }
             }
-
-
         }
     }
-
 
 
     override fun onLayerAdded(id: Int) {}
@@ -166,9 +171,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     override fun onExtentChanged(zoom: Float, center: GeoPoint?) {}
 
 
-    override fun onLayerDrawStarted() {
+    override fun onLayerDrawStarted() {}
 
-    }
     override fun onLongPress(event: MotionEvent?) {}
 
 
@@ -181,8 +185,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     override fun panStop() {}
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -191,9 +193,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         val map = app.map as MapDrawable
         mapView = MapViewOverlays(this, map)
         selectedOverlay = SelectFeatureOverlay(this, mapView!!)
-        mapView?.addOverlay(selectedOverlay)
-
-        overlay = BusesOverlay ( this, mapView!!)
+        overlay = BusesOverlay(this, mapView!!)
         mapView!!.addOverlay(overlay)
         val locationOverlay = CurrentLocationOverlay(this, mapView!!)
         mapView!!.addOverlay(locationOverlay)
@@ -221,23 +221,19 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             overlay!!.setVisibility(false)
         }
 
-
         setCenter()
         if (!preferences!!.getBoolean("signed", false)) {
             val intent = Intent(this, SignInActivity::class.java)
             startActivity(intent)
             finish()
         }
-
     }
 
 
-
-        override fun onStart() {
-            super.onStart()
-            mapView?.addListener(this)
-        }
-
+    override fun onStart() {
+        super.onStart()
+        mapView?.addListener(this)
+    }
 
 
     override fun onStop() {
@@ -245,7 +241,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         super.onStop()
         mapView?.let {
             val point = it.mapCenter
-            preferences?.edit()?.putFloat("zoom", it.zoomLevel)
+            preferences?.edit()?.putFloat("zoom", if (it.zoomLevel < 10f) it.zoomLevel else 10f)
                 ?.putFloat("scroll_x", point.x.toFloat())
                 ?.putFloat("scroll_y", point.y.toFloat())
                 ?.apply()
@@ -254,19 +250,33 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
 
-
     private fun setCenter() {
         mapView?.let {
-            val mapZoom = preferences?.getFloat("zoom", it.minZoom)
-            val x = preferences?.getFloat("scroll_x", 0f)
-            val y = preferences?.getFloat("scroll_y", 0f)
-            val mapScrollX = x?.toDouble() ?: 0.0
-            val mapScrollY = y?.toDouble() ?: 0.0
+            val mapZoom = preferences?.getFloat("zoom", 10f)
+            val x = preferences?.getFloat("scroll_x", 1.4681745E7f)
+            val y = preferences?.getFloat("scroll_y", 5317105.5f)
+            val mapScrollX = x!!.toDouble()
+            val mapScrollY = y!!.toDouble()
 
-            it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX, mapScrollY))
+            //Log.d("ScrollX", mapScrollX.toString())
+            ///Log.d("ScrollY", mapScrollY.toString())
+
+            it.map.setLimits(
+                GeoEnvelope(
+                    //TODO можно изменить коэффициенты лимитов пропорционально его Zoom
+                    mapScrollX - 1000,
+                    mapScrollX + 2000,
+                    mapScrollY - 2000,
+                    mapScrollY + 1000
+//                    mapScrollX + 2000.0 * Zoom,
+//                    mapScrollX - 1000.0 * Zoom,
+//                    mapScrollY - 2000.0 * Zoom,
+//                    mapScrollY + 1000.0
+                ), 0
+            )
+            it.setZoomAndCenter(16f, GeoPoint(mapScrollX, mapScrollY))
         }
     }
-
 
 
     private fun openCafe(layerId: Int, featureId: Long) {
@@ -322,7 +332,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when(item?.itemId) {
+        return when (item?.itemId) {
             R.id.action_signout -> {
                 val preferences = PreferenceManager.getDefaultSharedPreferences(this)
                 preferences.edit().remove("signed").remove("authorized").apply()
@@ -372,12 +382,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             }
             else -> super.onOptionsItemSelected(item)
         }
-
-
     }
-
-
-
 
 
     class SelectFeatureOverlay(context: Context, map: MapViewOverlays) : Overlay(context, map) {
@@ -392,8 +397,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         init {
             val outlineColor = ControlHelper.getColor(mContext, R.attr.colorAccent)
             val fillColor = ControlHelper.getColor(mContext, R.attr.colorPrimary)
-            val vertexStyle = VertexStyle(mContext, 255, fillColor, 5f, 2.6f,
-                fillColor, 5f, 2.6f, outlineColor, 6f, 3f)
+            val vertexStyle = VertexStyle(
+                mContext, 255, fillColor, 5f, 2.6f,
+                fillColor, 5f, 2.6f, outlineColor, 6f, 3f
+            )
             DrawItem.setVertexStyle(vertexStyle)
         }
 
@@ -494,7 +501,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 GeoConstants.GTPoint, GeoConstants.GTMultiPoint -> drawItem.drawPoints(canvas, isSelected)
                 GeoConstants.GTLineString, GeoConstants.GTMultiLineString, GeoConstants.GTPolygon, GeoConstants.GTMultiPolygon -> {
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
     }
