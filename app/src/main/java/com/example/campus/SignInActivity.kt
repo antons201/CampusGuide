@@ -146,26 +146,24 @@ class SignInActivity : AppCompatActivity() {
             intent.putExtra(LayerFillService.KEY_URI, uri)
             ContextCompat.startForegroundService(this, intent)
         }
-
-
     }
+
     private fun clear() {
             val app = application as? FEFUApplication
             (app?.map as MapDrawable).delete()
             app.addLayer()
             total = LAYERS.size
-        }
+    }
 
-        override fun onDestroy() {
-            super.onDestroy()
-            try {
-                receiver?.let { unregisterReceiver(it) }
-            } catch (e: Exception) {
-            }
+    override fun onDestroy() {
+        super.onDestroy()
+        try {
+            receiver?.let { unregisterReceiver(it) }
+        } catch (e: Exception) {
         }
+    }
 
     private fun style() {
-
         val style = SimpleMarkerStyle.MarkerStyleCircle
         val cafeStyle = SimpleMarkerStyle(Color.GREEN, Color.BLACK, 6f, style)
         val app = application as? FEFUApplication
@@ -188,16 +186,13 @@ class SignInActivity : AppCompatActivity() {
         (map.getLayerByName(LAYERS[3].second) as VectorLayer).isVisible = false
         (map.getLayerByName(LAYERS[4].second) as VectorLayer).isVisible = false
 
-
         signin()
-
     }
-    companion object {
 
+    companion object {
         const val AUTHORITY = "dvfu-demo.nextgis.com"
         const val FULL_URL = "http://$AUTHORITY"
         const val PERMISSIONS_CODE = 47
-
 
         const val INSTANCE = "http://${AUTHORITY}/resource/"
         val LAYERS = arrayListOf(
@@ -206,9 +201,7 @@ class SignInActivity : AppCompatActivity() {
             Pair("$INSTANCE/13", "Кафе и рестораны") ,
             Pair("$INSTANCE/11", "Отзывы"),
             Pair("$INSTANCE/12", "Заказы")
-
         )
-
     }
 
 }

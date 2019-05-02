@@ -212,6 +212,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
+      /*  (mapView?.map?.getLayerByName(SignInActivity.LAYERS[2].second) as? VectorLayer)?.let {
+            it.isVisible = true
+        }*/
+
         authorized = preferences!!.getBoolean("authorized", false)
         if (!authorized) {
             val cafe = SignInActivity.LAYERS[2].second
@@ -367,8 +371,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                         cafe.let { it.isVisible = checked[1] }
                         overlay?.setVisibility(checked[2])
                     }
-
-
 
                 if (!authorized) {
                     builder.setNegativeButton(R.string.login, null)
