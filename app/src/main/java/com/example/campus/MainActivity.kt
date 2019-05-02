@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     var mapView: MapViewOverlays? = null
     var preferences: SharedPreferences? = null
     var overlay: BusesOverlay? = null
-    var authorized = false
+    var authorized = true
 
     override fun onLayersReordered() {}
 
@@ -212,18 +212,18 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-      /*  (mapView?.map?.getLayerByName(SignInActivity.LAYERS[2].second) as? VectorLayer)?.let {
+        (mapView?.map?.getLayerByName(SignInActivity.LAYERS[2].second) as? VectorLayer)?.let {
             it.isVisible = true
-        }*/
+        }
 
-        authorized = preferences!!.getBoolean("authorized", false)
+/*        authorized = preferences!!.getBoolean("authorized", false)
         if (!authorized) {
             val cafe = SignInActivity.LAYERS[2].second
             (mapView?.map?.getLayerByName(cafe) as? VectorLayer)?.let {
                 it.isVisible = false
             }
             overlay!!.setVisibility(false)
-        }
+        }*/
 
         setCenter()
         if (!preferences!!.getBoolean("signed", false)) {
@@ -233,12 +233,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         }
     }
 
-
     override fun onStart() {
         super.onStart()
         mapView?.addListener(this)
     }
-
 
     override fun onStop() {
 
@@ -281,7 +279,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             it.setZoomAndCenter(16f, GeoPoint(mapScrollX, mapScrollY))
         }
     }
-
 
     private fun openCafe(layerId: Int, featureId: Long) {
         val intent = Intent(this, CafeActivity::class.java)
