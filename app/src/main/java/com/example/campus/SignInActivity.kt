@@ -24,9 +24,11 @@ import com.nextgis.maplib.display.RuleFeatureRenderer
 import com.nextgis.maplib.display.SimpleFeatureRenderer
 import com.nextgis.maplib.display.SimpleMarkerStyle
 import com.nextgis.maplib.map.MapDrawable
+import com.nextgis.maplib.map.NGWVectorLayer
 import com.nextgis.maplib.map.VectorLayer
 import com.nextgis.maplib.util.Constants
 import com.nextgis.maplib.util.PermissionUtil
+import com.nextgis.maplibui.fragment.NGWSettingsFragment
 import com.nextgis.maplibui.service.LayerFillService
 
 class SignInActivity : AppCompatActivity() {
@@ -93,13 +95,16 @@ class SignInActivity : AppCompatActivity() {
         val fullUrl = FULL_URL
         val accountName = AUTHORITY
         val app = application as? IGISApplication
-        app?.addAccount(accountName, fullUrl, Constants.NGW_ACCOUNT_GUEST, null, "ngw")?.let {
+        app?.addAccount(accountName, fullUrl, "student", "student1" , "ngw")?.let {
             if (!it) {
                 Toast.makeText(this, R.string.error_auth, Toast.LENGTH_SHORT).show()
-                app.getAccount(accountName)?.let { app.removeAccount(it) }
+                app.getAccount(accountName)?.let { account -> app.removeAccount(account) }
                 dialog?.dismiss()
                 return
             } else {
+                app.getAccount(accountName)?.let { account ->
+                    NGWSettingsFragment.setAccountSyncEnabled(account, app.authority, true)
+                }
                 layers()
             }
         }
@@ -170,11 +175,16 @@ class SignInActivity : AppCompatActivity() {
         val cafeStyle = SimpleMarkerStyle(Color.GREEN, Color.BLACK, 6f, style)
         val app = application as? FEFUApplication
         val map = app?.map as MapDrawable
-        val cafe = map.getLayerByName(LAYERS[2].second) as VectorLayer
+        val cafe = map.getLayerByName(LAYERS[2].second) as NGWVectorLayer
+        cafe.syncType = Constants.SYNC_ALL
         app.addLayer()
         cafe.renderer = SimpleFeatureRenderer(cafe, cafeStyle)
         cafe.save()
-        val shop = map.getLayerByName(LAYERS[0].second) as VectorLayer
+        val vending = map.getLayerByName(LAYERS[1].second) as NGWVectorLayer
+        vending.syncType = Constants.SYNC_ALL
+        vending.save()
+        val shop = map.getLayerByName(LAYERS[0].second) as NGWVectorLayer
+        shop.syncType = Constants.SYNC_ALL
         val shopStyle = FieldStyleRule(shop)
         shopStyle.key = "category_id"
         val groceryStyle = SimpleMarkerStyle(Color.LTGRAY, Color.BLACK, 5f, style)
@@ -185,8 +195,6 @@ class SignInActivity : AppCompatActivity() {
         shopStyle.setStyle("3", pharmacyStyle)
         shop.renderer = RuleFeatureRenderer(shop, shopStyle, groceryStyle)
         shop.save()
-        (map.getLayerByName(LAYERS[3].second) as VectorLayer).isVisible = false
-        (map.getLayerByName(LAYERS[4].second) as VectorLayer).isVisible = false
 
 
         signin()
@@ -194,19 +202,16 @@ class SignInActivity : AppCompatActivity() {
     }
     companion object {
 
-        const val AUTHORITY = "dvfu-demo.nextgis.com"
+        const val AUTHORITY = "194.213.97.46:8080"
         const val FULL_URL = "http://$AUTHORITY"
         const val PERMISSIONS_CODE = 47
 
 
         const val INSTANCE = "http://${AUTHORITY}/resource/"
         val LAYERS = arrayListOf(
-            Pair("$INSTANCE/7", "Магазины"),
-            Pair("$INSTANCE/8", "Вендинговые автоматы"),
-            Pair("$INSTANCE/13", "Кафе и рестораны") ,
-            Pair("$INSTANCE/11", "Отзывы"),
-            Pair("$INSTANCE/12", "Заказы")
-
+            Pair("$INSTANCE/3", "Магазины"),
+            Pair("$INSTANCE/4", "Вендинговые автоматы"),
+            Pair("$INSTANCE/2", "Кафе и рестораны")
         )
 
     }

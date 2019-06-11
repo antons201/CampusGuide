@@ -1,5 +1,6 @@
 package com.example.campus
 
+import android.accounts.AccountManager
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.PointF
@@ -13,10 +14,12 @@ import com.nextgis.maplib.util.GeoConstants
 import com.nextgis.maplibui.api.DrawItem
 import com.nextgis.maplibui.api.Overlay
 import com.nextgis.maplibui.api.VertexStyle
+import com.nextgis.maplibui.fragment.NGWSettingsFragment
 import com.nextgis.maplibui.mapui.MapViewOverlays
 import com.nextgis.maplibui.util.ControlHelper
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.*
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
@@ -31,6 +34,8 @@ import android.support.design.widget.FloatingActionButton
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
+import android.util.Log
+import android.util.Log.*
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -212,14 +217,14 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-        authorized = preferences!!.getBoolean("authorized", false)
+/*        authorized = preferences!!.getBoolean("authorized", false)
         if (!authorized) {
             val cafe = SignInActivity.LAYERS[2].second
             (mapView?.map?.getLayerByName(cafe) as? VectorLayer)?.let {
                 it.isVisible = false
             }
             overlay!!.setVisibility(false)
-        }
+        }*/
 
 
         setCenter()
@@ -228,7 +233,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             startActivity(intent)
             finish()
         }
-
+        sync()
     }
 
 
@@ -239,6 +244,21 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         }
 
 
+    private fun sync() {
+        AccountManager.get(this)?.let { manager ->
+            (application as? IGISApplication)?.let { app ->
+                manager.getAccountsByType(app.accountsType).firstOrNull()?.let { account ->
+                    val syncEnabled = NGWSettingsFragment.isAccountSyncEnabled(account, app.authority)
+                    if (syncEnabled) {
+                        val settings = Bundle()
+                        settings.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true)
+                        settings.putBoolean(ContentResolver.SYNC_EXTRAS_EXPEDITED, true)
+                        ContentResolver.requestSync(account, app.authority, settings)
+                    }
+                }
+            }
+        }
+    }
 
     override fun onStop() {
 
@@ -257,13 +277,12 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
     private fun setCenter() {
         mapView?.let {
-            val mapZoom = preferences?.getFloat("zoom", it.minZoom)
-            val x = preferences?.getFloat("scroll_x", 0f)
-            val y = preferences?.getFloat("scroll_y", 0f)
+            val mapZoom = preferences?.getFloat("zoom", 16f)
+            val x = preferences?.getFloat("scroll_x", 14682143.82f)
+            val y = preferences?.getFloat("scroll_y", 5316524.04f)
             val mapScrollX = x?.toDouble() ?: 0.0
             val mapScrollY = y?.toDouble() ?: 0.0
-
-            it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX, mapScrollY))
+            it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX,mapScrollY))
         }
     }
 
