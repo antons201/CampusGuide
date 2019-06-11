@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             startActivity(intent)
             finish()
         }
-
+        sync()
     }
 
 
