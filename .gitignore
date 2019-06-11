@@ -12,3 +12,5 @@
 /maplib
 /maplibui
 .externalNativeBuild
+.idea/encodings.xml
+.idea/runConfigurations.xml

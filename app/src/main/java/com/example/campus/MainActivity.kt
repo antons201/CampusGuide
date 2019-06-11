@@ -35,7 +35,6 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v7.app.AlertDialog
 import android.util.Log
-import android.util.Log.*
 import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
@@ -59,7 +58,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     var mapView: MapViewOverlays? = null
     var preferences: SharedPreferences? = null
     var overlay: BusesOverlay? = null
-    var authorized = false
+    var authorized = true
 
     override fun onLayersReordered() {}
 
@@ -67,11 +66,19 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
     override fun onSingleTapUp(event: MotionEvent?) {
         event?.let {
+            //Log.d("coords", "${event.x}:${event.y}")
+//            Log.d("center", "${mapView!!.mapCenter.x}, ${mapView!!.mapCenter.y}")
+//            Log.d("center", "${mapView!!.mapCenter.x}, ${mapView!!.mapCenter.y}")
+//            Log.d("all_X", "${mapView!!.x}, ${mapView!!.pivotX}, ${mapView!!.scaleX}, ${mapView!!.translationX}")
+//            Log.d("all_Y", "${mapView!!.y}, ${mapView!!.pivotY}, ${mapView!!.scaleY}, ${mapView!!.translationY}")
+            //mapView!!.setZoomAndCenter(1f, GeoPoint(mapView!!.mapCenter.x - 100000.0, mapView!!.mapCenter.y))
+
             val tolerance = resources.displayMetrics.density * ConstantsUI.TOLERANCE_DP.toDouble()
             val dMinX = event.x - tolerance
             val dMaxX = event.x + tolerance
             val dMinY = event.y - tolerance
             val dMaxY = event.y + tolerance
+            //Log.d("D", "$dMinX, $dMaxX, $dMinY, $dMinY")
             val envelope = GeoEnvelope(dMinX, dMaxX, dMinY, dMaxY)
             val mapEnv = mapView?.screenToMap(envelope) ?: return
 
@@ -217,14 +224,14 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
         preferences = PreferenceManager.getDefaultSharedPreferences(this)
 
-/*        authorized = preferences!!.getBoolean("authorized", false)
+        authorized = preferences!!.getBoolean("authorized", false)
         if (!authorized) {
             val cafe = SignInActivity.LAYERS[2].second
             (mapView?.map?.getLayerByName(cafe) as? VectorLayer)?.let {
                 it.isVisible = false
             }
             overlay!!.setVisibility(false)
-        }*/
+        }
 
 
         setCenter()
@@ -233,7 +240,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             startActivity(intent)
             finish()
         }
-        sync()
+
     }
 
 
@@ -282,6 +289,21 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
             val y = preferences?.getFloat("scroll_y", 5316524.04f)
             val mapScrollX = x?.toDouble() ?: 0.0
             val mapScrollY = y?.toDouble() ?: 0.0
+            //Log.d("ScrollX", mapScrollX.toString())
+            ///Log.d("ScrollY", mapScrollY.toString())
+//            it.map.setLimits(
+//                GeoEnvelope(
+//                    //TODO можно изменить коэффициенты лимитов пропорционально его Zoom
+//                    mapScrollX - 1000,
+//                    mapScrollX + 2000,
+//                    mapScrollY - 2000,
+//                    mapScrollY + 1000
+////                    mapScrollX + 2000.0 * Zoom,
+////                    mapScrollX - 1000.0 * Zoom,
+////                    mapScrollY - 2000.0 * Zoom,
+////                    mapScrollY + 1000.0
+//                ), 0
+//            )
             it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX,mapScrollY))
         }
     }

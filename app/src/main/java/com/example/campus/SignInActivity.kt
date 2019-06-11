@@ -195,6 +195,8 @@ class SignInActivity : AppCompatActivity() {
         shopStyle.setStyle("3", pharmacyStyle)
         shop.renderer = RuleFeatureRenderer(shop, shopStyle, groceryStyle)
         shop.save()
+        (map.getLayerByName(LAYERS[3].second) as VectorLayer).isVisible = false
+        (map.getLayerByName(LAYERS[4].second) as VectorLayer).isVisible = false
 
 
         signin()

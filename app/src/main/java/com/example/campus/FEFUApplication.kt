@@ -15,32 +15,32 @@ class FEFUApplication : GISApplication() {
         }
     }
 
-     fun addLayer() {
-        val layer = RemoteTMSLayerUI(this, mMap.createLayerStorage())
-        layer.url = "http://{a,b,c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        layer.tmsType = 2
-        layer.minZoom = 2f
-        layer.maxZoom = 19f
-        layer.name = "OSM"
-        layer.isVisible = true
-        mMap.addLayer(layer)
-        mMap.moveLayer( 0, layer)
-        mMap.save()
+ fun addLayer() {
+    val layer = RemoteTMSLayerUI(this, mMap.createLayerStorage())
+    layer.url = "http://{a,b,c}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    layer.tmsType = 2
+    layer.minZoom = 2f
+    layer.maxZoom = 19f
+    layer.name = "OSM"
+    layer.isVisible = true
+    mMap.addLayer(layer)
+    mMap.moveLayer( 0, layer)
+    mMap.save()
 
 
-         Handler().post {
-             try {
-                 layer.fillFromZip(Uri.parse("android.resource://" + packageName + "/" + R.raw.mapnik), null)
-             } catch (e: IOException) {
-                 e.printStackTrace()
-             } catch (e: NGException) {
-                 e.printStackTrace()
-             } catch (e: RuntimeException) {
-                 e.printStackTrace()
-             }
+     Handler().post {
+         try {
+             layer.fillFromZip(Uri.parse("android.resource://" + packageName + "/" + R.raw.mapnik), null)
+         } catch (e: IOException) {
+             e.printStackTrace()
+         } catch (e: NGException) {
+             e.printStackTrace()
+         } catch (e: RuntimeException) {
+             e.printStackTrace()
          }
-
      }
+
+ }
 
     override fun getAuthority(): String {
         return AUTHORITY
