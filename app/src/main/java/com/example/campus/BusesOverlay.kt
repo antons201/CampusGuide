@@ -69,3 +69,4 @@ class BusesOverlay(context: Context, map: MapViewOverlays) : Overlay(context, ma
         val coordinates = arrayListOf(GeoPoint(131.890756, 43.033386), GeoPoint(131.889368, 43.025636))
     }
 }
+
