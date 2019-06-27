@@ -210,7 +210,9 @@ class SignInActivity : AppCompatActivity() {
         val LAYERS = arrayListOf(
             Pair("$INSTANCE/3", "Магазины"),
             Pair("$INSTANCE/4", "Вендинговые автоматы"),
-            Pair("$INSTANCE/2", "Кафе и рестораны")
+            Pair("$INSTANCE/23", "Кафе и рестораны"),
+            Pair("$INSTANCE/7", "Сервисы")
+
         )
 
     }

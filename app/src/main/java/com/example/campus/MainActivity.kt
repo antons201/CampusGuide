@@ -102,10 +102,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                     for (i in items!!.indices) {
                         val feature = selectedLayer.getFeature(items[i])
                         feature?.let {
-                            if (selectedLayer.name == SignInActivity.LAYERS[2].second) {
-                                openCafe(selectedLayer.id, feature.id)
-                                return
-                            }
+
                             it.geometry?.let { selectedOverlay.feature = feature }
 
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -121,11 +118,13 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                                         ColorStateList.valueOf(Color.RED)
                                 }
                             }
-
+                            if (selectedLayer.isVisible) {
+                                findViewById<FloatingActionButton>(R.id.location).visibility = View.INVISIBLE
+                            }
                             findViewById<View>(R.id.people).visibility = View.GONE
                             findViewById<TextView>(R.id.title).text = feature.getFieldValueAsString("title")
                             findViewById<TextView>(R.id.category).text = feature.getFieldValueAsString("category")
-                            findViewById<TextView>(R.id.description).text = feature.getFieldValueAsString("description")
+                            findViewById<TextView>(R.id.description).text = feature.getFieldValueAsString("descript")
                         }
                     }
 
@@ -169,7 +168,9 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     override fun onLayerAdded(id: Int) {}
 
 
-    override fun onLayerDeleted(id: Int) {}
+    override fun onLayerDeleted(id: Int) {
+        findViewById<FloatingActionButton>(R.id.location).visibility = View.VISIBLE
+    }
 
 
     override fun onLayerChanged(id: Int) {}
@@ -310,12 +311,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
 
 
-    private fun openCafe(layerId: Int, featureId: Long) {
-        val intent = Intent(this, CafeActivity::class.java)
-        intent.putExtra("layer_id", layerId)
-        intent.putExtra("feature_id", featureId)
-        startActivity(intent)
-    }
 
 
     fun locatePosition() {
@@ -374,7 +369,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 true
             }
             R.id.action_layers -> {
-                val layers = arrayOf("Магазины и автоматы", "Кафе и рестораны", "Автобусы")
+                val layers = arrayOf("Магазины", "Вендинговые автоматы", "Кафе и рестораны", "Автобусы", "Сервисы")
                 val checked = BooleanArray(layers.size)
 
                 val app = application as? IGISApplication
@@ -384,8 +379,13 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 val vending = map.getLayerByName(SignInActivity.LAYERS[1].second) as Layer
                 shops.let { checked[0] = it.isVisible }
                 val cafe = map.getLayerByName(SignInActivity.LAYERS[2].second) as Layer
-                cafe.let { checked[1] = it.isVisible }
-                overlay?.let { checked[2] = it.isVisible }
+                val services = map.getLayerByName(SignInActivity.LAYERS[3].second) as Layer
+
+                cafe.let { checked[2] = it.isVisible }
+                vending.let { checked[1] = it.isVisible }
+                shops.let { checked[0] = it.isVisible }
+                services.let { checked[4] = it.isVisible }
+                overlay?.let { checked[3] = it.isVisible }
 
                 val builder = AlertDialog.Builder(this)
                 builder.setTitle(R.string.track_list)
@@ -394,9 +394,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                     }
                     .setPositiveButton(R.string.ok) { _, _ ->
                         shops.let { it.isVisible = checked[0] }
-                        vending.let { it.isVisible = checked[0] }
-                        cafe.let { it.isVisible = checked[1] }
-                        overlay?.setVisibility(checked[2])
+                        vending.let { it.isVisible = checked[1] }
+                        cafe.let { it.isVisible = checked[2] }
+                        services.let { it.isVisible = checked[4]}
+                        overlay?.setVisibility(checked[3])
                     }
 
 
