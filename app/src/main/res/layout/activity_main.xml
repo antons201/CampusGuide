@@ -10,9 +10,9 @@
     <FrameLayout
             android:id="@+id/map"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" tools:layout_editor_absoluteY="0dp"
+            android:layout_height="match_parent"
             app:layout_constraintEnd_toEndOf="parent"
-    />
+            android:layout_marginBottom="8dp" app:layout_constraintBottom_toBottomOf="parent"/>
 
     <android.support.design.widget.FloatingActionButton
             android:background="@null"
@@ -108,6 +108,16 @@
                 android:id="@+id/description"
                 tools:text="Lorem ipsum In publishing and graphic design, lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content. Replacing the actual content with placeholder text allows designers to design the form of the content before the content itself has been produced."
                 app:layout_constraintTop_toBottomOf="@id/avatar"
+                android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:background="@color/colorAccent"
+                style="@style/TextAppearance.AppCompat.Medium"/>
+        <TextView
+                android:id="@+id/phone"
+                tools:text="Lorem ipsum In publishing and graphic design, lorem ipsum is a placeholder text commonly used to demonstrate the visual form of a document without relying on meaningful content. Replacing the actual content with placeholder text allows designers to design the form of the content before the content itself has been produced."
+                app:layout_constraintTop_toBottomOf="@id/phone"
                 android:layout_marginTop="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

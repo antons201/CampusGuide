@@ -46,7 +46,7 @@
                     android:name="android.accounts.AccountAuthenticator"
                     android:resource="@xml/autheticator"/>
         </service>
-
+        <service android:name=".BusesService"></service>
         <service
                 android:name="com.nextgis.maplib.service.NGWSyncService"
                 android:exported="true"

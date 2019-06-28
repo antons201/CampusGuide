@@ -11,9 +11,6 @@ import com.nextgis.maplib.datasource.GeoPoint
 import com.nextgis.maplib.map.MapDrawable
 import com.nextgis.maplib.util.Constants
 import com.nextgis.maplib.util.GeoConstants
-import com.nextgis.maplibui.api.DrawItem
-import com.nextgis.maplibui.api.Overlay
-import com.nextgis.maplibui.api.VertexStyle
 import com.nextgis.maplibui.fragment.NGWSettingsFragment
 import com.nextgis.maplibui.mapui.MapViewOverlays
 import com.nextgis.maplibui.util.ControlHelper
@@ -46,7 +43,7 @@ import com.nextgis.maplib.datasource.GeoEnvelope
 import com.nextgis.maplib.map.Layer
 import com.nextgis.maplib.map.VectorLayer
 import com.nextgis.maplibui.GISApplication
-import com.nextgis.maplibui.api.MapViewEventListener
+import com.nextgis.maplibui.api.*
 import com.nextgis.maplibui.mapui.NGWVectorLayerUI
 import com.nextgis.maplibui.overlay.CurrentLocationOverlay
 import com.nextgis.maplibui.util.ConstantsUI
@@ -59,6 +56,24 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     var preferences: SharedPreferences? = null
     var overlay: BusesOverlay? = null
     var authorized = true
+    private var receiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            mapView?.map?.let {
+                val array = intent.getParcelableArrayListExtra<Bus>("buses")
+                val marker = overlay?.marker
+                overlay?.items?.clear()
+
+                for (bus in array) {
+                    bus.location?.let { coordinates ->
+                        overlay?.buses?.add(bus)
+                        overlay?.items?.add(OverlayItem(it, 0.0, 0.0, marker))
+                        overlay?.items?.last()?.setCoordinatesFromWGS(coordinates.longitude, coordinates.latitude)
+                    }
+                }
+                mapView?.postInvalidate()
+            }
+        }
+    }
 
     override fun onLayersReordered() {}
 
@@ -119,12 +134,13 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                                 }
                             }
                             if (selectedLayer.isVisible) {
-                                findViewById<FloatingActionButton>(R.id.location).visibility = View.INVISIBLE
+//                                findViewById<FloatingActionButton>(R.id.location).visibility = View.INVISIBLE
                             }
                             findViewById<View>(R.id.people).visibility = View.GONE
                             findViewById<TextView>(R.id.title).text = feature.getFieldValueAsString("title")
                             findViewById<TextView>(R.id.category).text = feature.getFieldValueAsString("category")
                             findViewById<TextView>(R.id.description).text = feature.getFieldValueAsString("descript")
+                            findViewById<TextView>(R.id.phone).text = feature.getFieldValueAsString("phone")
                         }
                     }
 
@@ -134,42 +150,41 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 }
             }
 
-
-            if (overlay!!.isVisible) {
-                overlay!!.selectBus(mapEnv)?.let {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                        findViewById<ImageView>(R.id.avatar).imageTintList = ColorStateList.valueOf(Color.BLUE)
-                    }
-
-                    findViewById<View>(R.id.people).visibility = View.VISIBLE
-                    findViewById<ProgressBar>(R.id.people).progress = Random(System.currentTimeMillis()).nextInt(0, 100)
-                    findViewById<TextView>(R.id.title).text = getString(R.string.bus)
-                    findViewById<TextView>(R.id.category).text = ""
-                    findViewById<TextView>(R.id.description).text = getString(R.string.bus_desc)
-                    findViewById<View>(R.id.info).visibility = View.VISIBLE
-
-                    mapView?.let { map ->
-                        it.getCoordinates(GeoConstants.CRS_WEB_MERCATOR)?.let { location ->
-                            val center = location.copy() as GeoPoint
-                            center.y -= 1000
-                            map.setZoomAndCenter(map.zoomLevel, center)
-                        }
-                    }
-                    return
-                }
-            }
+//
+//            if (overlay!!.isVisible) {
+//                overlay!!.selectBus(mapEnv)?.let {
+//                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                        findViewById<ImageView>(R.id.avatar).imageTintList = ColorStateList.valueOf(Color.BLUE)
+//                    }
+//
+//                    findViewById<View>(R.id.people).visibility = View.VISIBLE
+//                    findViewById<ProgressBar>(R.id.people).progress = Random(System.currentTimeMillis()).nextInt(0, 100)
+//                    findViewById<TextView>(R.id.title).text = getString(R.string.bus)
+//                    findViewById<TextView>(R.id.category).text = ""
+//                    findViewById<TextView>(R.id.description).text = getString(R.string.bus_desc)
+//                    findViewById<View>(R.id.info).visibility = View.VISIBLE
+//
+//                    mapView?.let { map ->
+//                        it.getCoordinates(GeoConstants.CRS_WEB_MERCATOR)?.let { location ->
+//                            val center = location.copy() as GeoPoint
+//                            center.y -= 1000
+//                            map.setZoomAndCenter(map.zoomLevel, center)
+//                        }
+//                    }
+//                    return
+//                }
+//            }
 
 
         }
     }
 
 
-
     override fun onLayerAdded(id: Int) {}
 
 
     override fun onLayerDeleted(id: Int) {
-        findViewById<FloatingActionButton>(R.id.location).visibility = View.VISIBLE
+//        findViewById<FloatingActionButton>(R.id.location).visibility = View.VISIBLE
     }
 
 
@@ -182,6 +197,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     override fun onLayerDrawStarted() {
 
     }
+
     override fun onLongPress(event: MotionEvent?) {}
 
 
@@ -194,8 +210,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     override fun panStop() {}
 
 
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
 
         super.onCreate(savedInstanceState)
@@ -206,7 +220,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         selectedOverlay = SelectFeatureOverlay(this, mapView!!)
         mapView?.addOverlay(selectedOverlay)
 
-        overlay = BusesOverlay ( this, mapView!!)
+        overlay = BusesOverlay(this, mapView!!)
         mapView!!.addOverlay(overlay)
         val locationOverlay = CurrentLocationOverlay(this, mapView!!)
         mapView!!.addOverlay(locationOverlay)
@@ -245,11 +259,21 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
 
+    override fun onStart() {
+        super.onStart()
+        mapView?.addListener(this)
 
-        override fun onStart() {
-            super.onStart()
-            mapView?.addListener(this)
+        startBusesService()
+    }
+
+    private fun startBusesService() {
+        if (overlay!!.isVisible) {
+            val intentFilter = IntentFilter("BUSES_UPDATE")
+            registerReceiver(receiver, intentFilter)
+            val intent = Intent(this, BusesService::class.java)
+            startService(intent)
         }
+    }
 
 
     private fun sync() {
@@ -282,7 +306,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
 
-
     private fun setCenter() {
         mapView?.let {
             val mapZoom = preferences?.getFloat("zoom", 16f)
@@ -305,12 +328,9 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 ////                    mapScrollY + 1000.0
 //                ), 0
 //            )
-            it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX,mapScrollY))
+            it.setZoomAndCenter(mapZoom ?: it.minZoom, GeoPoint(mapScrollX, mapScrollY))
         }
     }
-
-
-
 
 
     fun locatePosition() {
@@ -358,7 +378,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem?): Boolean {
-        return when(item?.itemId) {
+        return when (item?.itemId) {
             R.id.action_signout -> {
                 val preferences = PreferenceManager.getDefaultSharedPreferences(this)
                 preferences.edit().remove("signed").remove("authorized").apply()
@@ -396,7 +416,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                         shops.let { it.isVisible = checked[0] }
                         vending.let { it.isVisible = checked[1] }
                         cafe.let { it.isVisible = checked[2] }
-                        services.let { it.isVisible = checked[4]}
+                        services.let { it.isVisible = checked[4] }
                         overlay?.setVisibility(checked[3])
                     }
 
@@ -419,9 +439,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
     }
 
 
-
-
-
     class SelectFeatureOverlay(context: Context, map: MapViewOverlays) : Overlay(context, map) {
         private var items: MutableList<DrawItem> = arrayListOf()
         private var selectedItem: DrawItem? = null
@@ -434,8 +451,10 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         init {
             val outlineColor = ControlHelper.getColor(mContext, R.attr.colorAccent)
             val fillColor = ControlHelper.getColor(mContext, R.attr.colorPrimary)
-            val vertexStyle = VertexStyle(mContext, 255, fillColor, 5f, 2.6f,
-                fillColor, 5f, 2.6f, outlineColor, 6f, 3f)
+            val vertexStyle = VertexStyle(
+                mContext, 255, fillColor, 5f, 2.6f,
+                fillColor, 5f, 2.6f, outlineColor, 6f, 3f
+            )
             DrawItem.setVertexStyle(vertexStyle)
         }
 
@@ -536,7 +555,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 GeoConstants.GTPoint, GeoConstants.GTMultiPoint -> drawItem.drawPoints(canvas, isSelected)
                 GeoConstants.GTLineString, GeoConstants.GTMultiLineString, GeoConstants.GTPolygon, GeoConstants.GTMultiPolygon -> {
                 }
-                else -> {}
+                else -> {
+                }
             }
         }
     }
