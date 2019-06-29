@@ -208,10 +208,12 @@ class SignInActivity : AppCompatActivity() {
 
         const val INSTANCE = "http://${AUTHORITY}/resource/"
         val LAYERS = arrayListOf(
-            Pair("$INSTANCE/3", "Магазины"),
+            Pair("$INSTANCE/38", "Магазины"),
             Pair("$INSTANCE/4", "Вендинговые автоматы"),
             Pair("$INSTANCE/23", "Кафе и рестораны"),
-            Pair("$INSTANCE/7", "Сервисы")
+            Pair("$INSTANCE/7", "Сервисы"),
+            Pair("$INSTANCE/41", "Аптеки"),
+            Pair("$INSTANCE/48", "Услуги")
 
         )
 

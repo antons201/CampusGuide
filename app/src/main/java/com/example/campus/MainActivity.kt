@@ -47,6 +47,7 @@ import com.nextgis.maplibui.api.*
 import com.nextgis.maplibui.mapui.NGWVectorLayerUI
 import com.nextgis.maplibui.overlay.CurrentLocationOverlay
 import com.nextgis.maplibui.util.ConstantsUI
+import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
 class MainActivity : AppCompatActivity(), MapViewEventListener {
@@ -134,7 +135,9 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                                 }
                             }
                             if (selectedLayer.isVisible) {
-//                                findViewById<FloatingActionButton>(R.id.location).visibility = View.INVISIBLE
+                                location.visibility = View.INVISIBLE
+                                zoomIn.visibility = View.INVISIBLE
+                                zoomOut.visibility = View.INVISIBLE
                             }
                             findViewById<View>(R.id.people).visibility = View.GONE
                             findViewById<TextView>(R.id.title).text = feature.getFieldValueAsString("title")
@@ -184,7 +187,6 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
 
 
     override fun onLayerDeleted(id: Int) {
-//        findViewById<FloatingActionButton>(R.id.location).visibility = View.VISIBLE
     }
 
 
@@ -231,6 +233,9 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
         findViewById<FloatingActionButton>(R.id.zoomIn).setOnClickListener { mapView!!.zoomIn() }
         findViewById<FloatingActionButton>(R.id.zoomOut).setOnClickListener { mapView!!.zoomOut() }
         findViewById<ImageButton>(R.id.close).setOnClickListener {
+            zoomIn.visibility = View.VISIBLE
+            zoomOut.visibility = View.VISIBLE
+            location.visibility = View.VISIBLE
             findViewById<View>(R.id.info).visibility = View.GONE
             overlay?.defaultColor()
             selectedOverlay.feature = null
@@ -389,7 +394,7 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 true
             }
             R.id.action_layers -> {
-                val layers = arrayOf("Магазины", "Вендинговые автоматы", "Кафе и рестораны", "Автобусы", "Сервисы")
+                val layers = arrayOf("Магазины", "Вендинговые автоматы", "Кафе и рестораны", "Автобусы", "Сервисы", "Аптеки", "Услуги")
                 val checked = BooleanArray(layers.size)
 
                 val app = application as? IGISApplication
@@ -400,11 +405,15 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                 shops.let { checked[0] = it.isVisible }
                 val cafe = map.getLayerByName(SignInActivity.LAYERS[2].second) as Layer
                 val services = map.getLayerByName(SignInActivity.LAYERS[3].second) as Layer
+                val drugstore = map.getLayerByName(SignInActivity.LAYERS[4].second) as Layer
+                val amenities = map.getLayerByName(SignInActivity.LAYERS[5].second) as Layer
 
                 cafe.let { checked[2] = it.isVisible }
                 vending.let { checked[1] = it.isVisible }
                 shops.let { checked[0] = it.isVisible }
                 services.let { checked[4] = it.isVisible }
+                drugstore.let { checked[5] = it.isVisible }
+                amenities.let { checked[6] = it.isVisible }
                 overlay?.let { checked[3] = it.isVisible }
 
                 val builder = AlertDialog.Builder(this)
@@ -417,6 +426,8 @@ class MainActivity : AppCompatActivity(), MapViewEventListener {
                         vending.let { it.isVisible = checked[1] }
                         cafe.let { it.isVisible = checked[2] }
                         services.let { it.isVisible = checked[4] }
+                        drugstore.let { it.isVisible = checked[5] }
+                        amenities.let { it.isVisible = checked[6] }
                         overlay?.setVisibility(checked[3])
                     }
 
