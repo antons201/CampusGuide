@@ -183,17 +183,26 @@ class SignInActivity : AppCompatActivity() {
         val vending = map.getLayerByName(LAYERS[1].second) as NGWVectorLayer
         vending.syncType = Constants.SYNC_ALL
         vending.save()
+        val services = map.getLayerByName(LAYERS[3].second) as NGWVectorLayer
+        services.syncType = Constants.SYNC_ALL
+        services.save()
+        val drugstore = map.getLayerByName(LAYERS[4].second) as NGWVectorLayer
+        drugstore.syncType = Constants.SYNC_ALL
+        drugstore.save()
+        val amenities = map.getLayerByName(LAYERS[5].second) as NGWVectorLayer
+        amenities.syncType = Constants.SYNC_ALL
+        amenities.save()
         val shop = map.getLayerByName(LAYERS[0].second) as NGWVectorLayer
         shop.syncType = Constants.SYNC_ALL
-        val shopStyle = FieldStyleRule(shop)
-        shopStyle.key = "category_id"
-        val groceryStyle = SimpleMarkerStyle(Color.LTGRAY, Color.BLACK, 5f, style)
-        shopStyle.setStyle("1", groceryStyle)
-        val supermarketStyle = SimpleMarkerStyle(Color.GRAY, Color.BLACK, 5f, style)
-        shopStyle.setStyle("2", supermarketStyle)
-        val pharmacyStyle = SimpleMarkerStyle(Color.MAGENTA, Color.BLACK, 5f, style)
-        shopStyle.setStyle("3", pharmacyStyle)
-        shop.renderer = RuleFeatureRenderer(shop, shopStyle, groceryStyle)
+//        val shopStyle = FieldStyleRule(shop)
+//        shopStyle.key = "category_id"
+//        val groceryStyle = SimpleMarkerStyle(Color.LTGRAY, Color.BLACK, 5f, style)
+//        shopStyle.setStyle("1", groceryStyle)
+//        val supermarketStyle = SimpleMarkerStyle(Color.GRAY, Color.BLACK, 5f, style)
+//        shopStyle.setStyle("2", supermarketStyle)
+//        val pharmacyStyle = SimpleMarkerStyle(Color.MAGENTA, Color.BLACK, 5f, style)
+//        shopStyle.setStyle("3", pharmacyStyle)
+//        shop.renderer = RuleFeatureRenderer(shop, shopStyle, groceryStyle)
         shop.save()
 
         signin()
