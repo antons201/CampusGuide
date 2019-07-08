@@ -25,7 +25,45 @@ class BusesService : Service() {
     private var thread: Thread? = null
 
     val array = arrayListOf<Bus>()
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        Thread(Runnable {
+            while (!Thread.currentThread().isInterrupted) {
+                try {
+                    val response = NetworkUtil.get(URL, null, null, false)
+                    val data = JSONArray(response.responseBody)
+                    for (i in 0 until data.length()) {
+                        val item = data.getJSONObject(i)
+                        val location = Location(LocationManager.GPS_PROVIDER)
+                        location.latitude = item.getDouble("latitude")
+                        location.longitude = item.getDouble("longitude")
+                        val title = item.getString("id")
+                        val type = item.getString("type")
+                        if (type != "shuttle") continue
+                        var flag = false
+                        for (bus in array) {
+                            if (bus.title.equals(title)) {
+                                bus.location = location
+                                flag = true
+                                break
+                            }
+                        }
+                        if (flag) continue
+                        array.add(Bus(title, location, 0.0))
+                    }
+                    val notification = Intent("BUSES_UPDATE")
+                    notification.putParcelableArrayListExtra("buses", array)
+                    sendBroadcast(notification)
+                    //Thread.sleep(3000)
+                } catch (e: Exception) {
+                    Log.i("ERR", e.message)
+                }
+            }
+        }).start()
+        return START_STICKY
+    }
+
+    /*override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Thread(Runnable {
             while (!Thread.currentThread().isInterrupted) {
                 try {
@@ -39,13 +77,15 @@ class BusesService : Service() {
                         val item = data.getJSONObject(i)
                         val location = Location(LocationManager.GPS_PROVIDER)
                         val size = item.getJSONArray("coords").length()
-                        if(size > 0) {
+                        if (size > 0) {
                             val temp = item.getJSONArray("coords")[size - 1]
-                            val long = ((temp as  JSONObject).getDouble("lon1") / 100)
-                            val lat = temp.getDouble("lat1") / 100
-                            location.longitude = long.toInt() + ((long % 1) * 100 / 60)
-                            location.latitude = lat.toInt() + ((lat % 1) * 100 / 60)
-                            val title = item.getLong("imei").toString()
+                            //val long = ((temp as  JSONObject).getDouble("lon1") / 100)
+                            //val lat = temp.getDouble("lat1") / 100
+                            //location.longitude = long.toInt() + ((long % 1) * 100 / 60)
+                            //location.latitude = lat.toInt() + ((lat % 1) * 100 / 60)
+                            location.longitude = (temp as JSONObject).getDouble("lon1")
+                            location.latitude = temp.getDouble("lat1")
+                            val title = item.getString("imei")
                             Log.i("imei", title)
                             Log.i("long", location.longitude.toString())
                             Log.i("lat", location.latitude.toString())
@@ -122,7 +162,7 @@ class BusesService : Service() {
             }
         }).start()
         return START_STICKY
-    }
+    }*/
 
     override fun onDestroy() {
         super.onDestroy()
@@ -134,10 +174,12 @@ class BusesService : Service() {
     }
 
     companion object {
-        const val URL = "http://194.213.97.46:8118/campus-gid/common"
+        //const val URL = "http://194.213.97.46:8118/campus-gid/common"
+        const val URL = "https://dvfu.dewish.ru/map/api/"
     }
 
 }
+
 class
 BusesOverlay(context: Context, map: MapViewOverlays) : Overlay(context, map) {
     var buses: MutableList<Bus> = arrayListOf()
@@ -149,7 +191,6 @@ BusesOverlay(context: Context, map: MapViewOverlays) : Overlay(context, map) {
         for (item in items)
             item.marker = marker
     }
-
 
 
     fun selectBus(envelope: GeoEnvelope): Bus? {
@@ -173,8 +214,6 @@ BusesOverlay(context: Context, map: MapViewOverlays) : Overlay(context, map) {
         canvas.drawBitmap(marker, 0f, 0f, paint)
         return marker
     }
-
-
 
 
     override fun draw(canvas: Canvas?, mapDrawable: MapDrawable?) {
