@@ -15,33 +15,110 @@ import android.content.Intent
 import android.location.Location
 import android.location.LocationManager
 import android.os.IBinder
+import android.util.Log
+import com.google.gson.Gson
 import org.json.JSONArray
+import org.json.JSONObject
+
 
 class BusesService : Service() {
     private var thread: Thread? = null
 
+    val array = arrayListOf<Bus>()
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Thread(Runnable {
             while (!Thread.currentThread().isInterrupted) {
                 try {
                     val response = NetworkUtil.get(URL, null, null, false)
+                    response.responseBody = response.responseBody.replace("\"", "")
+                    response.responseBody = response.responseBody.replace("\\", "")
+                    response.responseBody = "[${response.responseBody}]"
                     val data = JSONArray(response.responseBody)
-                    val array = arrayListOf<Bus>()
+                    //val array = arrayListOf<Bus>()
                     for (i in 0 until data.length()) {
                         val item = data.getJSONObject(i)
                         val location = Location(LocationManager.GPS_PROVIDER)
-                        location.longitude = item.getDouble("lon")
-                        location.latitude = item.getDouble("lat")
-                        val title = item.getString("title")
-                        val congestion = item.getDouble("congestion")
-                        array.add(Bus(title, location, congestion))
+                        val size = item.getJSONArray("coords").length()
+                        if(size > 0) {
+                            val temp = item.getJSONArray("coords")[size - 1]
+                            val long = ((temp as  JSONObject).getDouble("lon1") / 100)
+                            val lat = temp.getDouble("lat1") / 100
+                            location.longitude = long.toInt() + ((long % 1) * 100 / 60)
+                            location.latitude = lat.toInt() + ((lat % 1) * 100 / 60)
+                            val title = item.getLong("imei").toString()
+                            Log.i("imei", title)
+                            Log.i("long", location.longitude.toString())
+                            Log.i("lat", location.latitude.toString())
+
+
+                            var flag = false
+                            for (bus in array) {
+                                if (bus.title.equals(title)) {
+                                    bus.location = location
+                                    flag = true
+                                    break
+                                }
+                            }
+                            if (flag) continue
+                            array.add(Bus(title, location, 0.0))
+                        }
                     }
                     val notification = Intent("BUSES_UPDATE")
                     notification.putParcelableArrayListExtra("buses", array)
                     sendBroadcast(notification)
-                    Thread.sleep(3000)
-                } catch (e: InterruptedException) {
+                    //Thread.sleep(3000)
+                } catch (e: Exception) {
+                    Log.i("ERR", e.message)
                 }
+//              пробегаемся по всем координатам
+//                try {
+//                    var response = NetworkUtil.get(URL, null, null, false)
+//                    response.responseBody = response.responseBody.replace("\"", "")
+//                    response.responseBody = response.responseBody.replace("\\", "")
+//                    response.responseBody = "[${response.responseBody}]"
+//                    val data = JSONArray(response.responseBody)
+//                    //val array = arrayListOf<Bus>()
+//
+//                    for (i in 0 until data.length()) {
+//                        val item = data.getJSONObject(i)
+//                        val location = Location(LocationManager.GPS_PROVIDER)
+//                        val size = item.getJSONArray("coords").length()
+//                        if(size > 0) {
+//                            for (j in 0 until size) {
+//
+//                                val temp = item.getJSONArray("coords")[j]
+//                                val long = ((temp as JSONObject).getDouble("lon1") / 100)
+//                                val lat = temp.getDouble("lat1") / 100
+//
+//
+//                                location.longitude = long.toInt() + ((long % 1) * 100 / 60)
+//                                location.latitude = lat.toInt() + ((lat % 1) * 100 / 60)
+//
+//                                val title = item.getInt("imei").toString()
+//                                Log.i("imei", title)
+//                                Log.i("long", long.toString())
+//                                Log.i("lat", lat.toString())
+//
+//                                var q = 0
+//                                var size2 = array.size
+//                                while (q != size2) {
+//                                    if (array[q].title.equals(title)) {
+//                                        array.removeAt(q)
+//                                    }
+//                                }
+//                                array.add(Bus(title, location, 0.0))
+//                                Thread.sleep(10)
+//                                val notification = Intent("BUSES_UPDATE")
+//                                notification.putParcelableArrayListExtra("buses", array)
+//                                sendBroadcast(notification)
+//                            }
+//                        }
+//                    }
+//
+//                    //Thread.sleep(3000)
+//                } catch (e: Exception) {
+//                    Log.i("ERR", e.message)
+//                }
             }
         }).start()
         return START_STICKY
@@ -57,7 +134,7 @@ class BusesService : Service() {
     }
 
     companion object {
-        const val URL = "http://ms.4ert.com/buses"
+        const val URL = "http://194.213.97.46:8118/campus-gid/common"
     }
 
 }

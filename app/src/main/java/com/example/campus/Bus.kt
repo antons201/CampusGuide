@@ -4,7 +4,7 @@ import android.location.Location
 import android.os.Parcel
 import android.os.Parcelable
 
-class Bus(val title: String?, val location: Location?, val congestion: Double) : Parcelable {
+class Bus(val title: String?, var location: Location?, val congestion: Double) : Parcelable {
 
     constructor(parcel: Parcel) : this(parcel.readString(), parcel.readParcelable<Location>(Location::class.java.classLoader), parcel.readDouble())
 

@@ -32,4 +32,5 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
     implementation project(':maplibui')
     implementation "com.android.support:design:$support_version"
+    implementation 'com.google.code.gson:gson:2.8.5'
 }
